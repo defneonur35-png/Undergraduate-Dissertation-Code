@@ -1,8 +1,6 @@
 # ============================================================
 #  NF1 Neurostimulation – Correlation Analysis
 #  GABA/NAA Delta × Inverse Efficiency (secondary WM outcome)
-#  NOTE: Higher inverse efficiency = WORSE performance
-#        So expect opposite sign to d prime if effects are consistent
 # ============================================================
 
 library(tidyverse)
@@ -16,26 +14,24 @@ conflicts_prefer(dplyr::filter)
 conflicts_prefer(dplyr::recode)
 
 
-# --- Load data -----------------------------------------------
+# Load Data
 corr_data <- read.csv("inverse_efficiency.csv")
 
-# Check structure and data
+# Check Structure and Data
 str(corr_data)
 corr_data
 
 
-# --- Fix typo and set factors --------------------------------
-# Correct "tCDS" typo to "tDCS" if present
-corr_data$Stimulation <- recode(corr_data$Stimulation, "tCDS" = "tDCS")
+# Set Factors
 
 corr_data$Stimulation <- factor(corr_data$Stimulation,
                                 levels = c("Sham", "tDCS", "tACS"))
 
-# Colour palette (matching GABA/NAA analysis)
+# Colour Palette (matching GABA/NAA analysis)
 stim_colours <- c("Sham" = "#009E73", "tDCS" = "#E69F00", "tACS" = "#56B4E9")
 
 
-# --- Descriptive summary -------------------------------------
+# Descriptive Summary
 summary(corr_data)
 
 corr_data %>%
@@ -50,71 +46,98 @@ corr_data %>%
   )
 
 
-# --- Correlation analysis ------------------------------------
-# Pearson correlations run separately per stimulation condition
-# as per supervisor recommendation
+# Correlation Analysis
 
-cat("\n--- Correlation: Sham ---\n")
+cat("\n Correlation: Sham \n")
 cor.test(corr_data$GABA_Delta[corr_data$Stimulation == "Sham"],
          corr_data$WM_Score[corr_data$Stimulation   == "Sham"],
          method = "pearson")
 
-cat("\n--- Correlation: tDCS ---\n")
+cat("\n Correlation: tDCS \n")
 cor.test(corr_data$GABA_Delta[corr_data$Stimulation == "tDCS"],
          corr_data$WM_Score[corr_data$Stimulation   == "tDCS"],
          method = "pearson")
 
-cat("\n--- Correlation: tACS ---\n")
+cat("\n Correlation: tACS \n")
 cor.test(corr_data$GABA_Delta[corr_data$Stimulation == "tACS"],
          corr_data$WM_Score[corr_data$Stimulation   == "tACS"],
          method = "pearson")
 
 
-# --- Graph 1: Faceted scatterplot (one panel per condition) --
-# Primary figure — each condition in its own panel with
-# regression line, 95% CI band, and Pearson r + p value
+# Graph 1: Faceted Scatterplot (one panel per condition) 
 
-graph1 <- ggplot(corr_data, aes(x = GABA_Delta, y = WM_Score,
-                                 colour = Stimulation)) +
+# Make sure stimulation order is consistent
+corr_data$Stimulation <- factor(
+  corr_data$Stimulation,
+  levels = c("Sham", "tDCS", "tACS")
+)
+
+# APA-style formatter: removes leading zero
+apa_num <- function(x, digits = 2) {
+  out <- sprintf(paste0("%.", digits, "f"), x)
+  out <- sub("^0\\.", ".", out)
+  out <- sub("^-0\\.", "-.", out)
+  out
+}
+
+# APA-style axis labels: -.2, -.1, .0
+apa_axis <- function(x) {
+  out <- sprintf("%.1f", x)
+  out <- sub("^0\\.", ".", out)
+  out <- sub("^-0\\.", "-.", out)
+  out
+}
+
+# Labels fixed to top-left of each facet
+corr_labels <- data.frame(
+  Stimulation = factor(c("Sham", "tDCS", "tACS"),
+                       levels = c("Sham", "tDCS", "tACS")),
+  x = -Inf,
+  y = Inf,
+  r = c(0.013, 0.022, 0.483),
+  p = c(0.964, 0.937, 0.050)
+)
+
+corr_labels$label <- paste0(
+  "italic(r) == ", apa_num(corr_labels$r, 2),
+  " * ',' ~ italic(p) == ", apa_num(corr_labels$p, 2)
+)
+
+graph1 <- ggplot(
+  corr_data,
+  aes(x = GABA_Delta, y = WM_Score, colour = Stimulation)
+) +
   geom_point(size = 3, alpha = 0.8) +
-  geom_smooth(method = "lm", se = TRUE, alpha = 0.15) +
-  stat_cor(method = "pearson",
-           aes(label = paste(after_stat(r.label),
-                             after_stat(p.label), sep = "~`,`~")),
-           label.x.npc = "left", label.y.npc = "top", size = 3.5) +
-  scale_colour_manual(values = stim_colours) +
-  facet_wrap(~ Stimulation) +
-  theme_classic(base_size = 13) +
-  labs(
-    title    = "GABA/NAA Change vs. Inverse Efficiency by Stimulation Condition",
-    subtitle = "Pearson r with 95% CI band  |  Higher IE = worse performance",
-    x        = expression(Delta * " GABA/NAA (Post – Pre, a.u.)"),
-    y        = "Inverse Efficiency (ms)"
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.15, linewidth = 0.8) +
+  geom_text(
+    data = corr_labels,
+    aes(x = x, y = y, label = label, colour = Stimulation),
+    parse = TRUE,
+    hjust = -0.1,
+    vjust = 1.3,
+    size = 4,
+    inherit.aes = FALSE
   ) +
-  theme(legend.position = "none")
+  scale_colour_manual(values = stim_colours) +
+  scale_x_continuous(labels = apa_axis) +
+  facet_wrap(~ Stimulation, nrow = 1) +
+  labs(
+    x = "\u0394 GABA/NAA Ratio (Post \u2212 Pre)",
+    y = "Inverse Efficiency (ms)"
+  ) +
+  theme_classic(base_size = 11, base_family = "Arial") +
+  theme(
+    axis.title.x = element_text(face = "bold"),
+    axis.title.y = element_text(face = "bold"),
+    axis.text.x = element_text(colour = "black"),
+    axis.text.y = element_text(colour = "black"),
+    strip.background = element_rect(fill = "white", colour = "black"),
+    strip.text = element_text(colour = "black"),
+    legend.position = "none",
+    plot.title = element_blank(),
+    plot.subtitle = element_blank()
+  )
 
 print(graph1)
 
-
-# --- Graph 2: All conditions side by side --------------------
-
-graph2 <- ggplot(corr_data, aes(x = GABA_Delta, y = WM_Score,
-                                 colour = Stimulation)) +
-  geom_point(size = 3, alpha = 0.8) +
-  geom_smooth(method = "lm", se = TRUE, alpha = 0.15) +
-  stat_cor(method = "pearson",
-           aes(label = paste(after_stat(r.label),
-                             after_stat(p.label), sep = "~`,`~")),
-           size = 3.5) +
-  scale_colour_manual(values = stim_colours) +
-  facet_wrap(~ Stimulation, nrow = 1) +
-  theme_classic(base_size = 13) +
-  labs(
-    title = "GABA/NAA Change vs. Inverse Efficiency",
-    x     = expression(Delta * " GABA/NAA (Post – Pre, a.u.)"),
-    y     = "Inverse Efficiency (ms)"
-  ) +
-  theme(legend.position = "none")
-
-print(graph2)
 

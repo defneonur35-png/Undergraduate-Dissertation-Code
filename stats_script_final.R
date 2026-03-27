@@ -4,7 +4,7 @@
 #  Updated script (random intercepts, Gaba_Stim_Complete.csv)
 # ============================================================
 
-# --- Libraries -----------------------------------------------
+# Libraries 
 library(car)
 library(ggplot2)
 library(dplyr)
@@ -16,30 +16,30 @@ library(conflicted)
 library(lme4)
 library(lmerTest)
 
-# Conflict management
+
+# Conflict Management
 conflicts_prefer(lmerTest::lmer)
 conflicts_prefer(dplyr::filter)
 
 
-# --- Read in the data ----------------------------------------
-# Set your working directory to the folder containing this file first,
-# or replace the filename with the full file path.
+# Read in the Data
 
 gaba_data <- read.csv("Gaba_Stim_Complete.csv")
+
 
 # Inspect
 gaba_data
 
 
-# --- Factor conversion ---------------------------------------
-# NOTE: Stimulation levels use "Sham" (capital S) to match the CSV.
-# Reference level is Sham so that tDCS and tACS contrasts are vs. control.
+# Factor Conversion
+
+# Reference level is Sham so that tDCS and tACS contrasts are vs. control
 
 gaba_data$ParticipantID <- factor(gaba_data$ParticipantID)
 
 gaba_data$Stimulation <- factor(
   gaba_data$Stimulation,
-  levels = c("Sham", "tDCS", "tACS")   # Sham = reference (capitalised)
+  levels = c("Sham", "tDCS", "tACS")   # Sham = reference 
 )
 
 gaba_data$Time <- factor(
@@ -48,7 +48,7 @@ gaba_data$Time <- factor(
 )
 
 
-# --- Descriptive statistics ----------------------------------
+# Descriptive Statistics 
 
 summary_table <- gaba_data %>%
   group_by(Stimulation, Time) %>%
@@ -65,13 +65,13 @@ summary_table <- gaba_data %>%
 print(summary_table)
 
 
-# --- Mixed-effects model -------------------------------------
+# Mixed-Effects Model
+
 # Random intercepts for participant (accounts for individual baseline
 # differences in GABA/NAA).  A random-slopes term (1 + Time | ParticipantID)
-# is not used here because the dataset is unbalanced — many participants
-# are missing Pre or Post measurements in one or more conditions —
-# which prevents reliable estimation of per-participant slopes and
-# typically produces a singular fit or non-convergence.
+# is not used here because the dataset is unbalanced - many participants
+# are missing Pre or Post measurements in one or more conditions.
+
 # The random-intercepts model still uses ALL available observations
 # via REML and correctly controls for repeated measures.
 
@@ -82,16 +82,18 @@ model <- lmer(
 
 summary(model)
 
-# Fixed-effects ANOVA table (Type III, Satterthwaite df)
+# Fixed-Effects ANOVA Table (Type III, Satterthwaite df)
 anova(model)
 
 
-# --- Model diagnostics ---------------------------------------
+# Model Diagnostics
 
 resid_df <- data.frame(
   Fitted    = fitted(model),
   Residuals = resid(model)
 )
+
+# PLOTS -> all in the same page
 
 # 1. Residuals vs Fitted
 resid_fitted <- ggplot(resid_df, aes(x = Fitted, y = Residuals)) +
@@ -100,20 +102,20 @@ resid_fitted <- ggplot(resid_df, aes(x = Fitted, y = Residuals)) +
   theme_classic() +
   labs(title = "Residuals vs Fitted", x = "Fitted values", y = "Residuals")
 
-# 2. Q-Q plot of residuals
+# 2. Q-Q Plot of Residuals*
 qq_resid <- ggplot(resid_df, aes(sample = Residuals)) +
   stat_qq() +
   stat_qq_line(colour = "red") +
   theme_classic() +
   labs(title = "Q-Q Plot of Residuals")
 
-# 3. Histogram of residuals
+# 3. Histogram of Residuals*
 hist_resid <- ggplot(resid_df, aes(x = Residuals)) +
   geom_histogram(bins = 20, fill = "steelblue", colour = "black", alpha = 0.8) +
   theme_classic() +
   labs(title = "Histogram of Residuals", x = "Residuals", y = "Count")
 
-# 4. Q-Q plot of random intercepts
+# 4. Q-Q Plot of Random Intercepts*
 re <- ranef(model)$ParticipantID
 qq_re_intercept <- ggplot(data.frame(RE = re[, 1]), aes(sample = RE)) +
   stat_qq() +
@@ -121,26 +123,27 @@ qq_re_intercept <- ggplot(data.frame(RE = re[, 1]), aes(sample = RE)) +
   theme_classic() +
   labs(title = "Random Intercepts Q-Q")
 
-# Arrange diagnostics
+# Arrange Diagnostics
 grid.arrange(resid_fitted, qq_resid, hist_resid, qq_re_intercept, ncol = 2)
 
 
-# --- Post-hoc: Estimated Marginal Means ----------------------
-# Pairwise contrasts within each Time point and within each Stimulation
-# condition, with Bonferroni correction.
+# Post-hoc: Estimated Marginal Means - with Bonferroni correction.
 
 emm <- emmeans(model, ~ Time * Stimulation)
 emm
 
 # Contrasts: Pre vs Post within each stimulation condition
+
 pairs(emmeans(model, ~ Time | Stimulation), adjust = "bonferroni")
 
 # Contrasts: between stimulation conditions at each time point
+
 pairs(emmeans(model, ~ Stimulation | Time), adjust = "bonferroni")
 
 
-# --- Supplementary: Paired t-tests per condition -------------
-# (Descriptive check; not the primary inference.)
+# Supplementary: Paired t-tests per condition
+
+# (not primary inference)
 
 for (stim in c("Sham", "tDCS", "tACS")) {
   cat("\n--- Paired t-test:", stim, "---\n")
@@ -148,14 +151,13 @@ for (stim in c("Sham", "tDCS", "tACS")) {
     filter(Stimulation == stim) %>%
     select(ParticipantID, Time, GABA) %>%
     pivot_wider(names_from = Time, values_from = GABA) %>%
-    filter(!is.na(Pre) & !is.na(Post))   # keep only complete pairs
+    filter(!is.na(Pre) & !is.na(Post))   
   print(t.test(stim_wide$Pre, stim_wide$Post, paired = TRUE))
 }
 
 
 # =============================================================
 #  DATA VISUALISATION
-#  Recommended graphs for a dissertation on GABA/NAA & stimulation
 # =============================================================
 
 # Colour palette (colour-blind friendly — Wong 2011 palette)
@@ -163,10 +165,7 @@ for (stim in c("Sham", "tDCS", "tACS")) {
 stim_colours <- c("Sham" = "#009E73", "tDCS" = "#E69F00", "tACS" = "#56B4E9")
 
 
-# --- Graph 1: Model-estimated means (EMMs) with 95% CI -------
-# WHY: This is the primary result figure for a mixed model.
-# It shows the model-adjusted means (not raw means), correctly
-# accounting for the unbalanced design and individual differences.
+# Graph 1: Model-estimated means (EMMs) with 95% CI 
 
 tim_colours <- c(
   "Sham" = "#009E73",
@@ -216,10 +215,7 @@ graph1_apa <- ggplot(
 
 print(graph1_apa)
 
-# --- Graph 2: Individual trajectories (raw data) -------------
-# WHY: Essential for transparency with a clinical/sparse dataset.
-# Shows individual variability and makes missing data visible.
-# Faceted by condition so each panel is readable.
+# Graph 2: Individual trajectories (raw data)
 
 graph2 <- ggplot(
   gaba_data,
@@ -259,17 +255,13 @@ graph2 <- ggplot(
 print(graph2)
 
 
-# --- Graph 3: Pre-Post change (delta) — boxplot + jitter -----
-# WHY: Directly visualises the direction and magnitude of change
-# per condition. More intuitive for readers than raw Pre/Post values.
-# Participants missing either Pre or Post are excluded from this plot
-# (NA deltas are dropped automatically by ggplot with a warning).
+# Graph 3: Pre-Post change (delta) — boxplot + jitter
 
 gaba_change <- gaba_data %>%
   pivot_wider(names_from = Time, values_from = GABA) %>%
   mutate(Delta = Post - Pre)
 
-# How many complete pairs per condition?
+# Number of complete pairs per condition?
 gaba_change %>%
   group_by(Stimulation) %>%
   summarise(N_complete = sum(!is.na(Delta)))
@@ -293,10 +285,7 @@ graph3 <- ggplot(gaba_change, aes(x = Stimulation, y = Delta,
 print(graph3)
 
 
-# --- Graph 4: Raincloud plot of delta scores -----------------
-# WHY: Combines distribution (half-violin), summary box, and raw
-# data points — the most information-dense single figure and
-# increasingly standard in clinical/neuroscience papers.
+# Graph 4: Raincloud plot of delta scores 
 
 graph4 <- ggplot(gaba_change, aes(x = Stimulation, y = Delta,
                                   fill = Stimulation,
