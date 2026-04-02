@@ -15,7 +15,7 @@ conflicts_prefer(dplyr::recode)
 
 
 # Load Data -
-corr_data <- read.csv("d_prime_corr.csv")
+corr_data <- read.csv("d_prime_corr2.csv")
 
 # Check structure and data
 str(corr_data)
@@ -85,13 +85,20 @@ apa_axis <- function(x) {
   out
 }
 
+corr_stats <- corr_data %>%
+  group_by(Stimulation) %>%
+  summarise(
+    r = cor.test(GABA_Delta, WM_Score, method = "pearson")$estimate,
+    p = cor.test(GABA_Delta, WM_Score, method = "pearson")$p.value,
+    .groups = "drop"
+  )
+
 corr_labels <- data.frame(
-  Stimulation = factor(c("Sham", "tDCS", "tACS"),
-                       levels = c("Sham", "tDCS", "tACS")),
+  Stimulation = factor(corr_stats$Stimulation, levels = c("Sham", "tDCS", "tACS")),
   x = -Inf,
   y = Inf,
-  r = c(0.113, -0.076, -0.355),
-  p = c(0.688, 0.781, 0.162)
+  r = corr_stats$r,
+  p = corr_stats$p
 )
 
 corr_labels$label <- paste0(
@@ -142,13 +149,14 @@ corr_forest <- data.frame(
               "Inverse Efficiency", "Inverse Efficiency", "Inverse Efficiency"),
   Stimulation = c("Sham", "tDCS", "tACS",
                   "Sham", "tDCS", "tACS"),
-  r = c(0.113, -0.076, -0.355,
-        0.013, 0.022, 0.483),
-  CI_low = c(-0.42, -0.55, -0.71,
-             -0.50, -0.48, 0.003),
-  CI_high = c(0.59, 0.44, 0.15,
-              0.52, 0.51, 0.782)
+  r =       c( 0.113, -0.092, -0.355,
+               0.013,  0.333,  0.483),
+  CI_low =  c(-0.424, -0.594, -0.714,
+              -0.503, -0.240,  0.003),
+  CI_high = c( 0.591,  0.461,  0.152,
+               0.522,  0.734,  0.782)
 )
+# For the forest plot the correlation values are to be added manually
 
 # Factor order
 corr_forest$Stimulation <- factor(
@@ -209,3 +217,4 @@ forest_plot <- ggplot(
   )
 
 print(forest_plot)
+

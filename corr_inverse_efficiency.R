@@ -15,7 +15,7 @@ conflicts_prefer(dplyr::recode)
 
 
 # Load Data
-corr_data <- read.csv("inverse_efficiency.csv")
+corr_data <- read.csv("inverse_efficiency2.csv")
 
 # Check Structure and Data
 str(corr_data)
@@ -89,13 +89,20 @@ apa_axis <- function(x) {
 }
 
 # Labels fixed to top-left of each facet
+corr_stats <- corr_data %>%
+  group_by(Stimulation) %>%
+  summarise(
+    r = cor.test(GABA_Delta, WM_Score, method = "pearson")$estimate,
+    p = cor.test(GABA_Delta, WM_Score, method = "pearson")$p.value,
+    .groups = "drop"
+  )
+
 corr_labels <- data.frame(
-  Stimulation = factor(c("Sham", "tDCS", "tACS"),
-                       levels = c("Sham", "tDCS", "tACS")),
+  Stimulation = factor(corr_stats$Stimulation, levels = c("Sham", "tDCS", "tACS")),
   x = -Inf,
   y = Inf,
-  r = c(0.013, 0.022, 0.483),
-  p = c(0.964, 0.937, 0.050)
+  r = corr_stats$r,
+  p = corr_stats$p
 )
 
 corr_labels$label <- paste0(
