@@ -149,12 +149,12 @@ corr_forest <- data.frame(
               "Inverse Efficiency", "Inverse Efficiency", "Inverse Efficiency"),
   Stimulation = c("Sham", "tDCS", "tACS",
                   "Sham", "tDCS", "tACS"),
-  r =       c( 0.113, -0.092, -0.355,
-               0.013,  0.333,  0.483),
-  CI_low =  c(-0.424, -0.594, -0.714,
-              -0.503, -0.240,  0.003),
-  CI_high = c( 0.591,  0.461,  0.152,
-               0.522,  0.734,  0.782)
+  r =       c( 0.145, -0.092, -0.337,
+               -0.013,  0.333,  0.469),
+  CI_low =  c(-0.397, -0.594, -0.703,
+              -0.522, -0.240, -0.015),
+  CI_high = c( 0.612,  0.461,  0.172,
+               0.503,  0.734,  0.775)
 )
 # For the forest plot the correlation values are to be added manually
 

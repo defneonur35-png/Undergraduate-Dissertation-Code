@@ -24,8 +24,8 @@ conflicts_prefer(dplyr::filter)
 
 # Read in the Data
 
-gaba_data <- read.csv("Gaba_Stim_Complete.csv")
-
+gaba_data <- read.csv("Gaba_Stim_Complete2.csv")
+# change file name if needed
 
 # Inspect
 gaba_data
@@ -124,7 +124,7 @@ qq_re_intercept <- ggplot(data.frame(RE = re[, 1]), aes(sample = RE)) +
   labs(title = "Random Intercepts Q-Q")
 
 # Arrange Diagnostics
-grid.arrange(resid_fitted, qq_resid, hist_resid, qq_re_intercept, ncol = 2)
+grid.arrange(resid_fitted, qq_resid, hist_resid, ncol = 2)
 
 
 # Post-hoc: Estimated Marginal Means - with Bonferroni correction.
@@ -165,13 +165,18 @@ for (stim in c("Sham", "tDCS", "tACS")) {
 stim_colours <- c("Sham" = "#009E73", "tDCS" = "#E69F00", "tACS" = "#56B4E9")
 
 
-# Graph 1: Model-estimated means (EMMs) with 95% CI 
+# Create emm_df for plotting
+emm_df <- as.data.frame(emm) %>%
+  rename(
+    GABA_NAA = emmean,
+    CI_lower = lower.CL,
+    CI_upper = upper.CL
+  )
 
-tim_colours <- c(
-  "Sham" = "#009E73",
-  "tDCS" = "#E69F00",
-  "tACS" = "#56B4E9"
-)
+emm_df$Time <- factor(emm_df$Time, levels = c("Pre", "Post"))
+
+
+# Graph 1: Model-estimated means (EMMs) with 95% CI
 
 graph1_apa <- ggplot(
   emm_df,
@@ -191,7 +196,7 @@ graph1_apa <- ggplot(
     linewidth = 0.6
   ) +
   scale_x_discrete(labels = c("Pre", "Post")) +
-  scale_colour_manual(values = tim_colours) +
+  scale_colour_manual(values = stim_colours) +
   scale_shape_manual(values = c("Sham" = 16, "tDCS" = 17, "tACS" = 15)) +
   scale_y_continuous(limits = c(0.08, 0.15)) +
   labs(
@@ -202,15 +207,15 @@ graph1_apa <- ggplot(
   ) +
   theme_classic(base_size = 11, base_family = "Arial") +
   theme(
-    axis.title.x = element_text(face = "bold"),
-    axis.title.y = element_text(face = "bold"),
-    axis.text.x  = element_text(colour = "black"),
-    axis.text.y  = element_text(colour = "black"),
-    legend.title = element_text(face = "plain", colour = "black"),
-    legend.text  = element_text(colour = "black"),
-    legend.position = "right",
+    axis.title.x     = element_text(face = "bold"),
+    axis.title.y     = element_text(face = "bold"),
+    axis.text.x      = element_text(colour = "black"),
+    axis.text.y      = element_text(colour = "black"),
+    legend.title     = element_text(face = "plain", colour = "black"),
+    legend.text      = element_text(colour = "black"),
+    legend.position  = "right",
     legend.background = element_blank(),
-    legend.key = element_blank()
+    legend.key       = element_blank()
   )
 
 print(graph1_apa)
@@ -235,7 +240,7 @@ graph2 <- ggplot(
     size = 2.4,
     alpha = 0.8
   ) +
-  scale_colour_manual(values = tim_colours) +
+  scale_colour_manual(values = stim_colours) +
   scale_x_discrete(labels = c("Pre", "Post")) +
   facet_wrap(~ Stimulation) +
   labs(
