@@ -14,15 +14,15 @@ The project investigates pre-post changes in dlPFC GABA following non-invasive b
 
 ## Files
 
-  # Main GABA/NAA Analysis R File 
+### Main GABA/NAA Analysis R File 
 - `stats_script_final.R` — main statistical analysis (linear mixed-effects models)
 
-  # Working Memory Analysis R Files
+### Working Memory Analysis R Files
 - `corr_dprime.R` — correlation analysis using d Prime
 - `corr_inverse_efficiency.R` — correlation analysis using inverse efficiency scores
 
 ## Methods
-Analyses were conducted in R using libraries including:
+Analyses were conducted in R Studio using libraries including:
 - library(car)
 - library(ggplot2)
 - library(dplyr)
