@@ -2,15 +2,14 @@
 title: "README"
 author: "Defne Onur"
 date: "2026-04-03"
-output: html_document
 ---
 
-# Undergraduate Dissertation Code
+# BSc (Hons) Cognitive Neuroscience and Psychology - Undergraduate Dissertation Code
 
-This repository contains the R code used for the statistical analysis, and visualisation for my undergraduate dissertation project.
+This repository contains the R code (all analyses conducted R Studio) used for the statistical analysis, and visualisation for my undergraduate dissertation project.
 
 ## Project Overview
-The project investigates pre-post changes in dlPFC GABA following non-invasive brain stimulation (Sham, tDCS, tACS), and whether changes in GABA predict working memory performance.
+The project revolves around investigating pre-post changes in left dlPFC GABA following non-invasive brain stimulation (Sham, tDCS, tACS), and whether changes in GABA predict working memory performance in a 2-back task.
 
 ## Files
 
