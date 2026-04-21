@@ -6,10 +6,10 @@ date: "2026-04-03"
 
 # BSc (Hons) Cognitive Neuroscience and Psychology - Undergraduate Dissertation Code
 
-This repository contains the R code (all analyses conducted R Studio) used for the statistical analysis, and visualisation for my undergraduate dissertation project.
+This repository contains the R code (all analyses conducted in RStudio) used for the statistical analysis and visualisation of my undergraduate dissertation project.
 
 ## Project Overview
-The project revolves around investigating pre-post changes in left dlPFC GABA following non-invasive brain stimulation (Sham, tDCS, tACS), and whether changes in GABA predict working memory performance in a verbal n-back task.
+The project investigates pre-post changes in left dlPFC GABA following non-invasive brain stimulation (sham, tDCS, tACS), and whether changes in GABA predict working memory performance in a verbal n-back task.
 
 ## Files
 
@@ -18,23 +18,24 @@ The project revolves around investigating pre-post changes in left dlPFC GABA fo
 
 ### Working Memory Analysis R Files
 - `corr_dprime.R` — correlation analysis using d Prime
+  - **Note:** For the forest plot, IE correlation values must be entered manually.
 - `corr_inverse_efficiency.R` — correlation analysis using inverse efficiency scores
 
 ## Methods
 Analyses were conducted in R Studio using libraries including:
-- library(car)
-- library(ggplot2)
-- library(dplyr)
-- library(ggdist)
-- library(emmeans)
-- library(gridExtra)
-- library(tidyr)
-- library(conflicted)
-- library(lme4)
-- library(lmerTest)
-- library(tidyverse)
-- library(broom)
-- library(ggpubr)
+- `car`
+- `ggplot2`
+- `dplyr`
+- `ggdist`
+- `emmeans`
+- `gridExtra`
+- `tidyr`
+- `conflicted`
+- `lme4`
+- `lmerTest`
+- `tidyverse`
+- `broom`
+- `ggpubr`
 
 ## Reproducibility
-All scripts required to reproduce the analyses and figures are included in this repository.
+The raw data are not included in this repository due to participant confidentiality. Scripts are provided for transparency and to document the analysis pipeline used in the dissertation.
