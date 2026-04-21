@@ -9,7 +9,7 @@ date: "2026-04-03"
 This repository contains the R code (all analyses conducted R Studio) used for the statistical analysis, and visualisation for my undergraduate dissertation project.
 
 ## Project Overview
-The project revolves around investigating pre-post changes in left dlPFC GABA following non-invasive brain stimulation (Sham, tDCS, tACS), and whether changes in GABA predict working memory performance in a 2-back task.
+The project revolves around investigating pre-post changes in left dlPFC GABA following non-invasive brain stimulation (Sham, tDCS, tACS), and whether changes in GABA predict working memory performance in a verbal n-back task.
 
 ## Files
 
